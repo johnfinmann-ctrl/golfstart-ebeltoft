@@ -1,0 +1,47 @@
+{
+  "name": "GolfStart Ebeltoft",
+  "short_name": "GolfStart",
+  "description": "Digital onboarding og fastholdelse af nye golfspillere i Ebeltoft Golfklub",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0e2018",
+  "theme_color": "#1b3a28",
+  "orientation": "portrait-primary",
+  "lang": "da",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "sports",
+    "lifestyle"
+  ],
+  "shortcuts": [
+    {
+      "name": "Kvinder & Golf",
+      "url": "./index.html#kvinder",
+      "description": "Introduktionsforløb for kvinder"
+    },
+    {
+      "name": "Mænd & Golf",
+      "url": "./index.html#maend",
+      "description": "Introduktionsforløb for mænd"
+    },
+    {
+      "name": "Kontakt",
+      "url": "./index.html#kontakt",
+      "description": "Kontakt Ebeltoft Golfklub"
+    }
+  ]
+}
