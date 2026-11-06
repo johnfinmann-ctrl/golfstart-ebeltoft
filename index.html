@@ -479,13 +479,30 @@ footer strong { color: var(--dune); font-size: .8rem; }
     max-width: 360px;
   }
 }
+
+/* V3.3 — local images and compact responsive design */
+#welcome-screen {background:linear-gradient(180deg,rgba(7,21,14,.82),rgba(7,21,14,.94)),url('maleri.jpg') center/cover;}
+.intro-ball{width:min(260px,62vw);aspect-ratio:1;object-fit:cover;border-radius:50%;box-shadow:0 15px 55px #0009;animation:introZoom 3.8s ease-out both;margin-bottom:18px;}
+@keyframes introZoom{from{transform:scale(.72);opacity:.3}to{transform:scale(1.08);opacity:1}}
+.oversigt-hero{background:linear-gradient(90deg,rgba(7,21,14,.88),rgba(7,21,14,.45)),url('green.jpg') center/cover;padding:52px 18px 54px;}
+.card-photo{width:100%;height:105px;object-fit:cover;border-radius:7px;display:block;}
+.cafe-photo{width:100%;max-height:260px;object-fit:cover;border-radius:9px;margin:12px 0;}
+.cafe-strip{position:sticky;bottom:0;z-index:700;text-align:center;background:#e8d898;border-top:1px solid #c4a86c;padding:9px 12px;box-shadow:0 -2px 15px #0002;}
+.cafe-strip a{color:#0e2819;font-weight:700;font-size:.82rem;text-decoration:none;}
+@media(max-width:480px){.oversigt-hero{padding:34px 14px 38px}.ov-card{padding:14px 11px}.card-photo{height:82px}.ov-card h3{font-size:.9rem}}
+@media(prefers-reduced-motion:reduce){.intro-ball{animation:none}}
+#wheel-dialog{border:0;border-radius:16px;padding:22px;max-width:min(420px,94vw);width:100%;background:#f4f0e2;color:#0e2819;box-shadow:0 18px 80px #0008;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);}
+#wheel-dialog::backdrop{background:#0009}
+.wheel-disk{width:min(300px,75vw);height:min(300px,75vw);margin:20px auto;border-radius:50%;border:9px solid #c4a86c;background:conic-gradient(#c4a86c 0 45deg,#1a3d26 45deg 90deg,#e8d898 90deg 135deg,#2c6643 135deg 180deg,#c4a86c 180deg 225deg,#1a3d26 225deg 270deg,#e8d898 270deg 315deg,#2c6643 315deg 360deg);transition:transform 3.5s cubic-bezier(.15,.75,.2,1);position:relative;}
+.wheel-disk:after{content:'GOLFSTART';position:absolute;inset:38%;background:#f4f0e2;border-radius:50%;display:grid;place-items:center;font-size:.52rem;font-weight:800;}
+.wheel-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.wheel-actions button{padding:10px 18px;border:0;border-radius:7px;background:#1a3d26;color:white;cursor:pointer}.wheel-actions button:last-child{background:#c4a86c;color:#0e2819}
 </style>
 </head>
 <body>
 
 <!-- ═══ WELCOME SCREEN ═══ -->
 <div id="welcome-screen">
-  <div class="ws-flag">⛳</div>
+  <img class="intro-ball" src="golfbold.jpg" alt="Malet golfbold med udsigt over golfbanen">
   <div class="ws-logo">GolfStart Ebeltoft</div>
   <div class="ws-sub">Sæson 2027 · Ebeltoft Golfklub</div>
   <div class="ws-bar-wrap"><div class="ws-bar"></div></div>
@@ -511,6 +528,8 @@ footer strong { color: var(--dune); font-size: .8rem; }
   <button class="vs-continue" onclick="finishVideo()">Videre til GolfStart →</button>
 </div>
 
+<div class="cafe-strip"><a href="https://cafeto.dk/" target="_blank" rel="noopener noreferrer">☕ CAFÉ TO · Besøg caféens hjemmeside ↗</a></div>
+<dialog id="wheel-dialog" aria-label="GolfStart lykkehjul"><h2 style="font-family:Lora,serif">GolfStart lykkehjul</h2><p>Demoversion – præmier og regler er endnu ikke aftalt. Intet gevinstløfte.</p><div class="wheel-disk" id="wheel-disk"></div><p id="wheel-result" style="text-align:center;margin:10px">Tryk på Drej for at teste.</p><div class="wheel-actions"><button id="wheel-spin" onclick="spinWheel()">Drej (demo)</button><button onclick="document.getElementById('wheel-dialog').close()">Luk</button></div></dialog>
 <!-- PWA BAR -->
 <div id="pwa-bar">
   <div class="pba">
@@ -578,13 +597,13 @@ footer strong { color: var(--dune); font-size: .8rem; }
   <div class="ov-grid ov-grid-sm">
     <div class="ov-card" onclick="showSub('kvinder')">
       <div class="oc-icon-wrap"><svg class="oc-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M12 12v8m-4 0h8"/></svg></div>
-      <h3>Kvinder & Golf</h3>
+      <img class="card-photo" src="green.jpg" alt="Green med udsigt til vandet"><h3>Kvinder & Golf</h3>
       <p>Trygt og socialt forløb skabt til kvinder.</p>
       <div class="oc-arrow"></div>
     </div>
     <div class="ov-card" onclick="showSub('maend')">
       <div class="oc-icon-wrap"><svg class="oc-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10" cy="12" r="6"/><path d="M22 2l-6 6m0-6h6v6"/></svg></div>
-      <h3>Mænd & Golf</h3>
+      <img class="card-photo" src="fairway.jpg" alt="Golfbane og fairway"><h3>Mænd & Golf</h3>
       <p>Praktisk introduktionsforløb med teknik og banespil.</p>
       <div class="oc-arrow"></div>
     </div>
@@ -613,14 +632,14 @@ footer strong { color: var(--dune); font-size: .8rem; }
     </div>
     <div class="ov-card" onclick="showSub('cafe')">
       <div class="oc-icon-wrap"><svg class="oc-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
-      <h3>Café To</h3>
+      <img class="card-photo" src="klubhus.jpg" alt="Ebeltoft golfklubhus"><h3>Café To</h3>
       <p>Mad, kaffe og socialt samvær i klubhuset.</p>
       <div class="oc-arrow"></div>
     </div>
-    <div class="ov-card" onclick="showSub('sponsorer')">
+    <div class="ov-card" onclick="openWheel()">
       <div class="oc-icon-wrap"><svg class="oc-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
-      <h3>Sponsorer</h3>
-      <p>Støt begyndergolf på Djursland.</p>
+      <h3>Lykkehjul</h3>
+      <p>Prøv lykkehjulet – præmier annonceres senere.</p>
       <div class="oc-arrow"></div>
     </div>
   </div>
@@ -715,6 +734,7 @@ footer strong { color: var(--dune); font-size: .8rem; }
 
     <div class="w" id="sub-cafe" style="display:none;">
       <h3>☕ Café To</h3>
+      <img class="cafe-photo" src="klubhus.jpg" alt="Klubhuset med terrasse">
       <div class="cgrd">
         <div class="cc2"><div class="em">🥪</div><h4>Smørrebrød & snacks</h4><p>Klassisk dansk smørrebrød og lette retter.</p></div>
         <div class="cc2"><div class="em">☕</div><h4>Kaffe & kage</h4><p>Friskbrygget kaffe og hjemmebagt kage.</p></div>
@@ -738,17 +758,7 @@ footer strong { color: var(--dune); font-size: .8rem; }
       </div>
     </div>
 
-    <div class="w" id="sub-sponsorer" style="display:none;">
-      <h3>🤝 Sponsorer 2027</h3>
-      <div class="ibox">Sponsorater støtter aktiviteter, præmier og udviklingen af nye golfspillere i Ebeltoft Golfklub.</div>
-      <div class="sps">
-        <div class="sp sp-gd"><div class="sp-badge">Guld · Hoved</div><div class="sp-info"><h4>Årets Hovedsponsor</h4><p>Logo på al trykt materiale og i klubhuset. 1 plads.</p></div><button class="sp-cta" onclick="go('kontakt')">Kontakt →</button></div>
-        <div class="sp sp-gd"><div class="sp-badge">Kvinder & Golf</div><div class="sp-info"><h4>Kvinder & Golf Sponsor</h4><p>Eksklusiv synlighed på holdets materiale.</p></div><button class="sp-cta" onclick="go('kontakt')">Kontakt →</button></div>
-        <div class="sp sp-gd"><div class="sp-badge">Mænd & Golf</div><div class="sp-info"><h4>Mænd & Golf Sponsor</h4><p>Eksklusiv synlighed på holdets materiale.</p></div><button class="sp-cta" onclick="go('kontakt')">Kontakt →</button></div>
-        <div class="sp sp-sv"><div class="sp-badge">Sølv · Præmie</div><div class="sp-info"><h4>Præmiesponsor</h4><p>Logo ved afslutningsarrangementer. 2 pladser.</p></div><button class="sp-cta" onclick="go('kontakt')">Kontakt →</button></div>
-        <div class="sp sp-lc"><div class="sp-badge">Lokal partner</div><div class="sp-info"><h4>Lokal Samarbejdspartner</h4><p>Omtale i velkomstpakken.</p></div><button class="sp-cta" onclick="go('kontakt')">Kontakt →</button></div>
-      </div>
-    </div>
+    <div class="w" id="sub-sponsorer" style="display:none;"><h3>☕ Café To</h3><p>Café To er vores lokale samarbejdspartner.</p><p><a href="https://cafeto.dk/" target="_blank" rel="noopener noreferrer">Besøg Café To ↗</a></p></div>
 
     <!-- FAQ embedded -->
     <div class="w" id="sub-faq" style="display:none;">
@@ -796,7 +806,7 @@ footer strong { color: var(--dune); font-size: .8rem; }
       <button class="snav-btn" onclick="showSub('klar')">Klar til start</button>
       <button class="snav-btn" onclick="showSub('faq')">FAQ</button>
       <button class="snav-btn" onclick="showSub('cafe')">Café To</button>
-      <button class="snav-btn" onclick="showSub('sponsorer')">Sponsorer</button>
+      <button class="snav-btn" onclick="openWheel()">Lykkehjul</button>
     </div>
   </div>
 </section>
@@ -1031,6 +1041,15 @@ footer strong { color: var(--dune); font-size: .8rem; }
 </footer>
 
 <script>
+function openWheel(){document.getElementById('wheel-dialog').showModal();}
+let wheelTurn=0;
+function spinWheel(){
+ const btn=document.getElementById('wheel-spin');if(btn.disabled)return;
+ btn.disabled=true;wheelTurn+=1440+Math.floor(Math.random()*360);
+ document.getElementById('wheel-disk').style.transform='rotate('+wheelTurn+'deg)';
+ document.getElementById('wheel-result').textContent='Hjulet drejer…';
+ setTimeout(()=>{document.getElementById('wheel-result').textContent='Demo afsluttet – præmier fastlægges før lancering.';btn.disabled=false;},3600);
+}
 // ── WELCOME VIDEO CONFIG ──
 // To swap video: change WELCOME_VIDEO_URL to a new iframe src or MP4 URL
 const WELCOME_VIDEO_URL = 'https://app.heygen.com/embeds/9a9e3a44d9f44908af5ee978e804197c';
@@ -1054,15 +1073,14 @@ function finishVideo(){
   document.getElementById('heygen-iframe').src = ''; // stop playback
   document.getElementById('topbar').style.display = '';
   document.getElementById('nav').style.display = '';
-  localStorage.setItem('gs_welcomed_ebt','1');
+  localStorage.setItem('gs_welcomed_ebt','1'); sessionStorage.setItem('gs_welcomed_ebt_session','1');
 }
 
 function skipVideo(){
   finishVideo();
 }
 
-// Skip welcome+video if already seen (uncomment for production):
-// if(localStorage.getItem('gs_welcomed_ebt')){ document.getElementById('welcome-screen').classList.add('hidden'); }
+if(sessionStorage.getItem('gs_welcomed_ebt_session')) { document.getElementById('welcome-screen').classList.add('hidden'); document.getElementById('video-screen').classList.remove('active'); }
 // Auto-dismiss splash after 4.2s if user doesn't tap
 setTimeout(()=>{ if(!document.getElementById('welcome-screen').classList.contains('hidden')) enterApp(); }, 4200);
 
@@ -1095,8 +1113,8 @@ function showSub(id){
 // ── FORM ──
 function sendForm(btn){
   const c=btn.closest('.fcard'), ok=c.querySelector('.fok');
-  if(ok) ok.style.display='block';
-  btn.disabled=true; btn.style.opacity='.5';
+  if(ok){ok.style.display='block';ok.textContent='Forespørgslen er ikke sendt automatisk endnu. Kontakt klubben direkte – formularen mangler en modtagerintegration.'; }
+  btn.disabled=false;
 }
 
 // ── FAQ ──
