@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>GolfStart Ebeltoft 2027</title>
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GolfStart">
+<meta name="theme-color" content="#0f2a1a">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── DESIGN TOKENS ── */
+:root {
+  --ink:     #0e2819;
+  --deep:    #07150e;
+  --grove:   #1a3d26;
+  --fairway: #2c6643;
+  --sage:    #5a9a70;
+  --dune:    #c4a86c;
+  --straw:   #e8d898;
+  --linen:   #f4f0e2;
+  --white:   #fdfcf8;
+  --muted:   #4e5e52;
+  --border:  #dbd4bf;
+  --r:       10px;
+  --sh:      0 2px 18px rgba(14,40,25,.09);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { font-family: 'Inter', sans-serif; background: var(--linen); color: var(--ink); overflow-x: hidden; line-height: 1.6; }
+
+/* ── WELCOME SCREEN ── */
+#welcome-screen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--ink);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 32px 24px;
+  transition: opacity .6s ease, visibility .6s ease;
+}
+#welcome-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+.ws-flag {
+  font-size: 3.2rem; margin-bottom: 24px;
+  animation: ws-pulse 2s ease infinite;
+}
+@keyframes ws-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+.ws-logo {
+  font-family: 'Lora', serif;
+  font-size: clamp(1.7rem, 5vw, 2.6rem);
+  font-weight: 700; color: var(--white);
+  text-align: center; line-height: 1.2;
+  margin-bottom: 8px;
+  opacity: 0; transform: translateY(14px);
+  animation: ws-up .7s ease .3s forwards;
+}
+.ws-sub {
+  font-size: .92rem; color: rgba(232,216,152,.75);
+  text-align: center; margin-bottom: 36px;
+  opacity: 0;
+  animation: ws-up .7s ease .55s forwards;
+}
+@keyframes ws-up { to { opacity: 1; transform: none; } }
+.ws-bar-wrap {
+  width: min(280px, 80vw); height: 3px;
+  background: rgba(255,255,255,.12); border-radius: 2px;
+  margin-bottom: 36px; overflow: hidden;
+}
+.ws-bar {
+  height: 100%; width: 0; background: var(--dune); border-radius: 2px;
+  animation: ws-fill 1.8s ease .4s forwards;
+}
+@keyframes ws-fill { to { width: 100%; } }
+.ws-enter {
+  background: var(--dune); color: var(--ink);
+  border: none; padding: 13px 32px; border-radius: 7px;
+  font-family: 'Inter', sans-serif; font-size: .92rem; font-weight: 600;
+  cursor: pointer; letter-spacing: .02em;
+  opacity: 0; transform: translateY(10px);
+  animation: ws-up .6s ease 1.4s forwards;
+  transition: opacity .18s, transform .16s;
+}
+.ws-enter:hover { opacity: .88; transform: translateY(-1px) !important; }
+.ws-note {
+  font-size: .72rem; color: rgba(200,184,130,.45);
+  margin-top: 20px; text-align: center;
+  opacity: 0; animation: ws-up .5s ease 1.7s forwards;
+}
+
+/* ── PWA BAR ── */
+#pwa-bar { display: none; background: var(--deep); border-bottom: 1px solid rgba(196,170,110,.2); padding: 10px 16px; }
+.pba { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pba-icon { width: 34px; height: 34px; border-radius: 8px; background: var(--dune); display: flex; align-items: center; justify-content: center; font-size: .95rem; flex-shrink: 0; }
+.pba-txt { flex: 1; }
+.pba-txt strong { display: block; color: var(--linen); font-size: .82rem; font-weight: 600; }
+.pba-txt span { font-size: .7rem; color: rgba(200,184,130,.7); }
+.pba-btns { display: flex; gap: 6px; }
+.pba-yes { background: var(--dune); color: var(--ink); border: none; padding: 7px 13px; border-radius: 5px; font-family: 'Inter', sans-serif; font-size: .76rem; font-weight: 600; cursor: pointer; }
+.pba-no  { background: transparent; color: rgba(200,184,130,.65); border: 1px solid rgba(200,184,130,.2); padding: 7px 10px; border-radius: 5px; font-family: 'Inter', sans-serif; font-size: .76rem; cursor: pointer; }
+
+/* ── TOPBAR ── */
+#topbar {
+  background: var(--ink); display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 14px; gap: 7px; flex-wrap: nowrap;
+  position: sticky; top: 0; z-index: 800;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+}
+.brand { font-family: 'Lora', serif; color: var(--straw); font-size: .97rem; font-weight: 700; white-space: nowrap; }
+.brand em { color: var(--dune); font-style: normal; }
+.top-acts { display: flex; gap: 6px; flex-wrap: wrap; }
+.ta { display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 5px; font-size: .7rem; font-weight: 500; text-decoration: none; cursor: pointer; border: none; font-family: 'Inter', sans-serif; white-space: nowrap; transition: opacity .16s; }
+.ta:hover { opacity: .8; }
+.ta-gold  { background: var(--dune); color: var(--ink); }
+.ta-green { background: var(--fairway); color: #fff; }
+.ta-ghost { background: transparent; color: rgba(200,184,130,.8); border: 1px solid rgba(200,184,130,.2); }
+
+/* ── PRIMARY NAV (5 items) ── */
+#nav { background: var(--grove); border-bottom: 1px solid rgba(255,255,255,.05); }
+.nav-row { display: flex; flex-wrap: wrap; padding: 0 8px; }
+.nav-row a { color: rgba(232,216,152,.65); text-decoration: none; font-size: .72rem; font-weight: 500; letter-spacing: .04em; padding: 10px 10px; white-space: nowrap; border-bottom: 2px solid transparent; cursor: pointer; transition: color .16s, border-color .16s; display: block; flex: 1; text-align: center; min-width: 0; }
+.nav-row a:hover, .nav-row a.on { color: var(--dune); border-bottom-color: var(--dune); }
+.nav-row a.nav-app { color: var(--dune); font-weight: 600; }
+@media (max-width: 380px) { .nav-row a { font-size: .67rem; padding: 9px 6px; letter-spacing: .01em; } }
+
+/* ── PAGES ── */
+.pg { display: none; }
+.pg.on { display: block; }
+
+/* ── OVERSIGT HERO ── */
+.oversigt-hero {
+  background: linear-gradient(155deg, var(--deep) 0%, var(--ink) 45%, var(--grove) 100%);
+  padding: 40px 18px 48px; text-align: center; position: relative; overflow: hidden;
+}
+.oversigt-hero::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 40px; background: linear-gradient(to bottom, transparent, var(--linen)); pointer-events: none; }
+.oh-eyebrow { display: inline-block; font-size: .67rem; letter-spacing: .18em; text-transform: uppercase; color: var(--dune); font-weight: 500; margin-bottom: 14px; position: relative; }
+.oversigt-hero h1 { font-family: 'Lora', serif; color: var(--white); font-size: clamp(1.8rem, 5vw, 3rem); font-weight: 700; line-height: 1.18; margin-bottom: 12px; position: relative; }
+.oversigt-hero p { color: rgba(232,216,152,.8); font-size: .94rem; max-width: 420px; margin: 0 auto 30px; line-height: 1.75; position: relative; }
+.hero-ctas { display: flex; flex-wrap: wrap; gap: 9px; justify-content: center; position: relative; }
+.btn { display: inline-flex; align-items: center; gap: 7px; padding: 12px 22px; border-radius: 7px; font-size: .87rem; font-weight: 600; text-decoration: none; cursor: pointer; border: none; font-family: 'Inter', sans-serif; transition: transform .15s, opacity .15s; white-space: nowrap; }
+.btn:hover { transform: translateY(-1px); opacity: .9; }
+.btn-p { background: var(--dune); color: var(--ink); }
+.btn-s { background: var(--fairway); color: #fff; }
+.btn-g { background: transparent; color: rgba(232,216,152,.88); border: 1.5px solid rgba(232,216,152,.28); }
+
+/* ── OVERSIGT CARDS ── */
+.ov-grid {
+  max-width: 840px; margin: 0 auto; padding: 20px 14px 14px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 12px;
+}
+.ov-grid:first-of-type { padding-top: 32px; }
+.ov-card {
+  background: var(--white); border: 1px solid var(--border); border-radius: var(--r);
+  padding: 22px 18px; box-shadow: var(--sh); cursor: pointer;
+  transition: box-shadow .17s, transform .15s; text-align: left;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.ov-card:hover { box-shadow: 0 6px 24px rgba(14,40,25,.14); transform: translateY(-2px); }
+.ov-card .oc-icon-wrap { width:44px; height:44px; border-radius:10px; background:var(--linen); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; margin-bottom:10px; }
+.ov-card .oc-icon-wrap .oc-svg { width:22px; height:22px; }
+.ov-card .oc-icon { font-size: 1.4rem; }
+.ov-card h3 { font-family: 'Lora', serif; font-size: 1.02rem; font-weight: 700; color: var(--ink); }
+.ov-card p { font-size: .83rem; color: var(--muted); line-height: 1.6; flex: 1; }
+.ov-card .oc-arrow { font-size: .75rem; color: var(--dune); font-weight: 600; margin-top: 6px; display:flex;align-items:center;gap:4px; }
+.ov-card .oc-arrow::after { content:"→"; }
+.oc-svg { width: 26px; height: 26px; color: var(--fairway); flex-shrink:0; }
+.ov-card.oc-primary { border-top: 3px solid var(--dune); }
+.ov-card.oc-green   { border-top: 3px solid var(--fairway); }
+.ov-section-head {
+  max-width: 840px; margin: 0 auto; padding: 4px 16px 8px;
+  font-size: .68rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted);
+}
+.ov-grid-sm { padding-top: 0; }
+
+/* ── SECTION HEAD ── */
+.sh { background: var(--grove); padding: 44px 18px 34px; text-align: center; }
+.sh-pill { display: inline-block; font-size: .64rem; letter-spacing: .15em; text-transform: uppercase; font-weight: 600; color: var(--dune); border: 1px solid rgba(196,170,110,.32); padding: 3px 11px; border-radius: 3px; margin-bottom: 13px; }
+.sh h2 { font-family: 'Lora', serif; color: var(--white); font-size: clamp(1.5rem, 4vw, 2.25rem); font-weight: 700; max-width: 600px; margin-inline: auto; }
+.sh p { color: rgba(232,216,152,.72); margin-top: 9px; font-size: .9rem; max-width: 480px; margin-inline: auto; line-height: 1.75; }
+
+/* ── CONTENT WRAP ── */
+.w { max-width: 780px; margin: 0 auto; padding: 38px 16px 60px; }
+.w > p { color: var(--muted); font-size: .9rem; line-height: 1.77; margin-bottom: 14px; }
+.w h3 { font-family: 'Lora', serif; font-size: 1.15rem; color: var(--ink); margin: 26px 0 9px; font-weight: 700; }
+
+/* ── CARD GRID ── */
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 13px; margin: 20px 0; }
+.card { background: var(--white); border: 1px solid var(--border); border-radius: var(--r); padding: 20px 16px; box-shadow: var(--sh); transition: box-shadow .17s, transform .15s; }
+.card:hover { box-shadow: 0 6px 22px rgba(14,40,25,.13); transform: translateY(-2px); }
+.card .ci { font-size: 1.5rem; margin-bottom: 9px; }
+.card h4 { font-family: 'Lora', serif; font-size: .98rem; color: var(--ink); margin-bottom: 5px; font-weight: 700; }
+.card p { font-size: .83rem; color: var(--muted); line-height: 1.62; }
+.card-d { border-top: 3px solid var(--dune); }
+.card-g { border-top: 3px solid var(--fairway); }
+
+/* ── FORLØB STEPS ── */
+.steps { display: flex; flex-direction: column; margin: 26px 0; }
+.step { display: flex; gap: 14px; align-items: flex-start; }
+.step-l { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 42px; }
+.step-dot { width: 42px; height: 42px; border-radius: 50%; background: var(--ink); border: 2px solid var(--dune); color: var(--dune); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .86rem; font-family: 'Lora', serif; }
+.step-line { width: 2px; flex: 1; background: var(--border); min-height: 18px; margin: 3px 0; }
+.step-b { padding-bottom: 26px; flex: 1; padding-top: 7px; }
+.step-b h4 { font-family: 'Lora', serif; font-size: 1rem; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
+.step-b p { font-size: .85rem; color: var(--muted); line-height: 1.65; }
+
+/* ── DARK BOX ── */
+.dbox { background: linear-gradient(140deg, var(--ink), var(--deep)); border-radius: var(--r); padding: 24px 20px; margin: 18px 0; color: var(--white); }
+.dbox h3 { font-family: 'Lora', serif; font-size: 1.05rem; color: var(--straw); margin-bottom: 12px; }
+.dl { list-style: none; }
+.dl li { display: flex; gap: 9px; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,.06); font-size: .86rem; line-height: 1.55; color: rgba(232,216,152,.85); }
+.dl li:last-child { border-bottom: none; }
+.dl li::before { content: '⛳'; font-size: .8rem; flex-shrink: 0; margin-top: 1px; }
+
+/* ── INFO BOX ── */
+.ibox { background: var(--white); border: 1px solid var(--border); border-left: 4px solid var(--dune); border-radius: var(--r); padding: 14px 17px; margin: 16px 0; font-size: .87rem; line-height: 1.75; }
+.ibox strong { color: var(--grove); }
+
+/* ── FORM CARD ── */
+.fcard { background: var(--white); border: 1px solid var(--border); border-radius: var(--r); padding: 24px 20px; margin: 20px 0; box-shadow: var(--sh); }
+.fcard h3 { font-family: 'Lora', serif; font-size: 1.05rem; color: var(--ink); margin-bottom: 16px; font-weight: 700; }
+.fg { margin-bottom: 13px; }
+.fg label { display: block; font-size: .72rem; font-weight: 600; letter-spacing: .05em; color: var(--muted); margin-bottom: 4px; }
+.fg input, .fg select, .fg textarea { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-family: 'Inter', sans-serif; font-size: .88rem; background: var(--linen); color: var(--ink); outline: none; transition: border-color .16s; }
+.fg input:focus, .fg select:focus, .fg textarea:focus { border-color: var(--fairway); }
+.fg textarea { min-height: 78px; resize: vertical; }
+.fsend { background: var(--dune); color: var(--ink); border: none; padding: 12px 24px; border-radius: 6px; font-family: 'Inter', sans-serif; font-size: .89rem; font-weight: 600; cursor: pointer; width: 100%; transition: opacity .16s; }
+.fsend:hover { opacity: .85; }
+.fok { display: none; background: #d2ecd6; border: 1px solid var(--sage); border-radius: 6px; padding: 12px 15px; margin-top: 11px; font-size: .86rem; color: var(--grove); font-weight: 500; text-align: center; }
+
+/* ── TILMELD EN VEN ── */
+.ven-hero {
+  background: linear-gradient(145deg, var(--grove), var(--ink));
+  border-radius: var(--r); padding: 28px 22px; text-align: center;
+  margin: 22px 0; color: var(--white);
+}
+.ven-hero .ve-icon { font-size: 2.4rem; margin-bottom: 10px; }
+.ven-hero h3 { font-family: 'Lora', serif; font-size: 1.2rem; color: var(--straw); margin-bottom: 7px; }
+.ven-hero p { font-size: .87rem; color: rgba(232,216,152,.78); line-height: 1.7; max-width: 380px; margin-inline: auto; }
+.ven-steps { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin: 20px 0; }
+.ven-step { background: var(--white); border: 1px solid var(--border); border-radius: var(--r); padding: 18px 14px; box-shadow: var(--sh); display: flex; gap: 12px; align-items: flex-start; }
+.ven-step .vs-num { width: 28px; height: 28px; border-radius: 50%; background: var(--dune); color: var(--ink); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .78rem; font-family: 'Lora', serif; flex-shrink: 0; }
+.ven-step h4 { font-size: .87rem; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+.ven-step p { font-size: .8rem; color: var(--muted); line-height: 1.55; }
+
+/* ── LINKS (TOOLS) ── */
+.links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 11px; margin: 20px 0; }
+.lnk { background: var(--white); border: 1px solid var(--border); border-radius: var(--r); padding: 17px 13px; text-align: center; text-decoration: none; color: var(--ink); display: block; box-shadow: var(--sh); transition: box-shadow .17s, transform .15s; }
+.lnk:hover { box-shadow: 0 6px 22px rgba(14,40,25,.13); transform: translateY(-2px); }
+.lnk .li { font-size: 1.6rem; margin-bottom: 6px; }
+.lnk h4 { font-size: .85rem; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+.lnk p { font-size: .75rem; color: var(--muted); line-height: 1.48; }
+.lnk .la { display: inline-block; margin-top: 7px; font-size: .68rem; font-weight: 600; color: var(--fairway); }
+.lnk-info { cursor: default; }
+.ts { display: flex; gap: 5px; margin-top: 7px; justify-content: center; flex-wrap: wrap; }
+.sb { font-size: .64rem; font-weight: 600; color: var(--fairway); text-decoration: none; border: 1px solid var(--border); padding: 3px 7px; border-radius: 4px; transition: background .15s, color .15s; }
+.sb:hover { background: var(--fairway); color: #fff; }
+
+/* ── CHECKLIST ── */
+.ckl { list-style: none; margin: 18px 0; }
+.ckl li { display: flex; align-items: flex-start; gap: 11px; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: .88rem; line-height: 1.65; }
+.ckl li:last-child { border-bottom: none; }
+.ck { width: 22px; height: 22px; border-radius: 50%; background: var(--fairway); color: #fff; display: flex; align-items: center; justify-content: center; font-size: .68rem; flex-shrink: 0; margin-top: 2px; }
+
+/* ── FAQ ── */
+.faq { margin: 20px 0; }
+.fi { background: var(--white); border: 1px solid var(--border); border-radius: var(--r); margin-bottom: 6px; overflow: hidden; box-shadow: var(--sh); }
+.fq { width: 100%; background: transparent; border: none; padding: 14px 17px; text-align: left; font-family: 'Inter', sans-serif; font-size: .87rem; font-weight: 600; color: var(--ink); cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 9px; transition: background .15s; }
+.fq:hover { background: var(--linen); }
+.fq .ar { font-size: .84rem; color: var(--fairway); transition: transform .22s; flex-shrink: 0; }
+.fq.op .ar { transform: rotate(180deg); }
+.fa { display: none; padding: 0 17px 14px; font-size: .85rem; color: var(--muted); line-height: 1.72; border-top: 1px solid var(--border); }
+.fa.op { display: block; padding-top: 13px; }
+
+/* ── CONTACT CARD ── */
+.contact-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; box-shadow: var(--sh); margin: 20px 0; }
+.cc-head { background: var(--ink); padding: 18px 20px; }
+.cc-head h3 { font-family: 'Lora', serif; font-size: 1.05rem; font-weight: 700; color: var(--straw); margin-bottom: 2px; }
+.cc-head span { font-size: .76rem; color: rgba(232,216,152,.58); }
+.cc-body { padding: 16px 20px; }
+.crow { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+.crow:last-child { border-bottom: none; }
+.cicon { width: 33px; height: 33px; border-radius: 50%; background: var(--linen); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: .88rem; flex-shrink: 0; }
+.cinfo .lbl { font-size: .65rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 600; margin-bottom: 1px; }
+.cinfo .val { font-size: .87rem; color: var(--ink); font-weight: 500; }
+.cinfo a { color: var(--fairway); text-decoration: none; }
+.cinfo a:hover { text-decoration: underline; }
+.cinfo button.clink { background: none; border: none; color: var(--fairway); font-family: 'Inter', sans-serif; font-size: .87rem; font-weight: 500; cursor: pointer; padding: 0; text-decoration: underline; }
+.cc-btns { display: flex; flex-wrap: wrap; gap: 7px; padding: 13px 20px; background: var(--linen); border-top: 1px solid var(--border); }
+.cbtn { flex: 1; min-width: 110px; padding: 10px 12px; border-radius: 6px; font-family: 'Inter', sans-serif; font-size: .81rem; font-weight: 600; text-decoration: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: opacity .15s; }
+.cbtn:hover { opacity: .85; }
+.cb-g    { background: var(--fairway); color: #fff; }
+.cb-gold { background: var(--dune); color: var(--ink); }
+.cb-dark { background: var(--ink); color: var(--straw); }
+.cb-sage { background: var(--sage); color: #fff; }
+
+/* ── SPONSORS ── */
+.sps { display: flex; flex-direction: column; gap: 11px; margin: 20px 0; }
+.sp { border-radius: var(--r); padding: 14px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; box-shadow: var(--sh); }
+.sp-gd { background: linear-gradient(90deg,#f5e8b0,#fdf7d8); border: 1.5px solid var(--dune); }
+.sp-sv { background: linear-gradient(90deg,#eaeaea,#f4f4f4); border: 1.5px solid #bbb; }
+.sp-lc { background: linear-gradient(90deg,#d4eed8,#eef6f0); border: 1.5px solid var(--sage); }
+.sp-badge { font-size: .59rem; letter-spacing: .11em; text-transform: uppercase; font-weight: 700; padding: 3px 9px; border-radius: 3px; white-space: nowrap; flex-shrink: 0; }
+.sp-gd .sp-badge { background: var(--dune); color: var(--ink); }
+.sp-sv .sp-badge { background: #888; color: #fff; }
+.sp-lc .sp-badge { background: var(--sage); color: #fff; }
+.sp-info { flex: 1; min-width: 120px; }
+.sp-info h4 { font-size: .87rem; font-weight: 600; color: var(--ink); margin-bottom: 1px; }
+.sp-info p { font-size: .77rem; color: var(--muted); }
+.sp-cta { background: transparent; border: 1.5px solid var(--dune); color: var(--ink); padding: 5px 12px; border-radius: 5px; font-family: 'Inter', sans-serif; font-size: .73rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background .15s; }
+.sp-cta:hover { background: var(--dune); }
+
+/* ── CAFÉ ── */
+.cgrd { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 11px; margin: 18px 0; }
+.cc2 { background: var(--white); border: 1px solid var(--border); border-radius: var(--r); padding: 17px 13px; text-align: center; box-shadow: var(--sh); }
+.cc2 .em { font-size: 1.55rem; margin-bottom: 6px; }
+.cc2 h4 { font-family: 'Lora', serif; font-size: .92rem; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+.cc2 p { font-size: .78rem; color: var(--muted); line-height: 1.52; }
+
+/* ── APP / QR ── */
+.inst-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 13px; margin: 18px 0; }
+.ic { background: var(--white); border: 1px solid var(--border); border-radius: var(--r); padding: 19px 16px; box-shadow: var(--sh); }
+.ic.ios { border-top: 3px solid #555; }
+.ic.adr { border-top: 3px solid #3ddc84; }
+.ic-h { display: flex; align-items: center; gap: 8px; margin-bottom: 11px; }
+.ic-logo { font-size: 1.55rem; }
+.ic-t { font-family: 'Lora', serif; font-size: .94rem; font-weight: 700; color: var(--ink); }
+.ic-s { font-size: .7rem; color: var(--muted); }
+.ic ol { padding-left: 16px; font-size: .84rem; color: var(--ink); line-height: 1.8; }
+.ic-done { margin-top: 8px; font-size: .76rem; color: var(--fairway); font-weight: 600; }
+.qrbox { background: var(--ink); border-radius: var(--r); padding: 28px 20px; text-align: center; margin: 24px 0; }
+.qrbox h3 { font-family: 'Lora', serif; font-size: 1.15rem; color: var(--straw); margin-bottom: 6px; }
+.qrbox p { font-size: .85rem; color: rgba(232,216,152,.74); margin-bottom: 18px; }
+#qrc { background: #fff; border-radius: 8px; padding: 8px; margin: 0 auto 13px; display: block; }
+.qr-u { font-size: .72rem; color: rgba(200,184,130,.62); margin-bottom: 16px; word-break: break-all; max-width: 360px; margin-inline: auto; }
+.share-btn { background: var(--dune); color: var(--ink); border: none; padding: 11px 26px; border-radius: 6px; font-family: 'Inter', sans-serif; font-size: .87rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: opacity .16s; }
+.share-btn:hover { opacity: .87; }
+#cptxt { display: none; margin-top: 8px; font-size: .73rem; color: var(--sage); }
+
+/* ── TOAST ── */
+#email-toast { display: none; position: fixed; bottom: 72px; left: 50%; transform: translateX(-50%); background: var(--grove); color: var(--straw); padding: 9px 19px; border-radius: 6px; font-size: .82rem; font-weight: 600; z-index: 3000; white-space: nowrap; border: 1px solid rgba(196,170,110,.35); box-shadow: var(--sh); }
+
+/* ── COOKIE ── */
+#ck { position: fixed; bottom: 0; left: 0; right: 0; background: var(--deep); border-top: 1px solid rgba(200,184,130,.15); padding: 11px 15px; display: flex; align-items: center; gap: 9px; flex-wrap: wrap; z-index: 2000; font-size: .79rem; color: rgba(200,184,130,.75); }
+#ck p { flex: 1; line-height: 1.5; min-width: 150px; }
+.ck-y { background: var(--dune); color: var(--ink); border: none; padding: 7px 14px; border-radius: 5px; font-family: 'Inter', sans-serif; font-size: .77rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.ck-n { background: transparent; color: rgba(200,184,130,.6); border: 1px solid rgba(200,184,130,.18); padding: 7px 10px; border-radius: 5px; font-family: 'Inter', sans-serif; font-size: .77rem; cursor: pointer; white-space: nowrap; }
+
+/* ── DIVIDER ── */
+.div { height: 1px; background: var(--border); margin: 26px 0; }
+
+/* ── FOOTER ── */
+footer { background: var(--ink); color: rgba(200,184,130,.55); text-align: center; padding: 26px 16px; font-size: .75rem; line-height: 1.9; border-top: 1px solid rgba(255,255,255,.05); }
+footer strong { color: var(--dune); font-size: .8rem; }
+.fl { display: flex; justify-content: center; flex-wrap: wrap; gap: 15px; margin-top: 8px; }
+.fl a, .fl button { color: rgba(200,184,130,.52); text-decoration: none; font-size: .71rem; background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; padding: 0; transition: color .15s; }
+.fl a:hover, .fl button:hover { color: var(--dune); }
+
+/* ── SECONDARY CONTENT TABS (Kvinder/Mænd/Café/etc. inside Oversigt) ── */
+.sub-nav { display: flex; flex-wrap: wrap; gap: 7px; margin: 22px 0 8px; }
+.snav-btn { background: var(--white); border: 1.5px solid var(--border); color: var(--ink); padding: 7px 14px; border-radius: 20px; font-family: 'Inter', sans-serif; font-size: .78rem; font-weight: 500; cursor: pointer; transition: background .15s, border-color .15s; }
+.snav-btn:hover, .snav-btn.active { background: var(--ink); color: var(--straw); border-color: var(--ink); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 480px) {
+  .ov-grid { grid-template-columns: 1fr 1fr; gap: 10px; padding: 18px 12px 28px; }
+  .ov-grid-sm { grid-template-columns: 1fr 1fr; }
+  .cards { grid-template-columns: 1fr; }
+  .links-grid { grid-template-columns: 1fr 1fr; }
+  .cgrd { grid-template-columns: 1fr 1fr; }
+  .inst-grid { grid-template-columns: 1fr; }
+  .cc-btns { flex-direction: column; }
+  .cbtn { min-width: unset; }
+  .ven-steps { grid-template-columns: 1fr; }
+  .ven-step { flex-direction: row; }
+}
+
+/* ── VIDEO WELCOME SCREEN ── */
+#video-screen {
+  position: fixed; inset: 0; z-index: 9998;
+  background: var(--deep);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px 16px 32px;
+}
+#video-screen.active {
+  display: flex;
+}
+.vs-header {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+.vs-skip {
+  background: transparent;
+  border: 1px solid rgba(200,184,130,.3);
+  color: rgba(200,184,130,.7);
+  padding: 6px 14px;
+  border-radius: 5px;
+  font-family: 'Inter', sans-serif;
+  font-size: .76rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color .16s, color .16s;
+}
+.vs-skip:hover {
+  border-color: var(--dune);
+  color: var(--dune);
+}
+.vs-iframe-wrap {
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 9 / 16;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 8px 40px rgba(0,0,0,.6);
+  flex-shrink: 0;
+}
+.vs-iframe-wrap iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+.vs-continue {
+  margin-top: 22px;
+  background: var(--fairway);
+  color: #fff;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 7px;
+  font-family: 'Inter', sans-serif;
+  font-size: .95rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  max-width: 420px;
+  letter-spacing: .02em;
+  transition: opacity .16s, transform .15s;
+}
+.vs-continue:hover {
+  opacity: .9;
+  transform: translateY(-1px);
+}
+/* Mobile: use more vertical space */
+@media (max-width: 480px) {
+  #video-screen {
+    padding: 10px 10px 24px;
+    justify-content: flex-start;
+  }
+  .vs-iframe-wrap {
+    max-width: 100%;
+    border-radius: 10px;
+  }
+  .vs-continue {
+    max-width: 100%;
+  }
+}
+/* Tablet / desktop: cap width so video doesn't go huge */
+@media (min-width: 600px) {
+  #video-screen {
+    justify-content: center;
+    padding: 24px;
+  }
+  .vs-iframe-wrap {
+    max-width: 360px;
+  }
+  .vs-continue {
+    max-width: 360px;
+  }
+  .vs-header {
+    max-width: 360px;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ WELCOME SCREEN ═══ -->
+<div id="welcome-screen">
+  <div class="ws-flag">⛳</div>
+  <div class="ws-logo">GolfStart Ebeltoft</div>
+  <div class="ws-sub">Sæson 2027 · Ebeltoft Golfklub</div>
+  <div class="ws-bar-wrap"><div class="ws-bar"></div></div>
+  <button class="ws-enter" onclick="enterApp()">Kom i gang</button>
+  <div class="ws-note">Tryk for at åbne GolfStart Ebeltoft</div>
+</div>
+
+<!-- ═══ VIDEO WELCOME SCREEN ═══ -->
+<div id="video-screen">
+  <div class="vs-header">
+    <button class="vs-skip" onclick="skipVideo()">Spring over →</button>
+  </div>
+  <div class="vs-iframe-wrap">
+    <iframe
+      id="heygen-iframe"
+      src=""
+      title="Velkommen til GolfStart Ebeltoft"
+      frameborder="0"
+      allow="encrypted-media; fullscreen"
+      allowfullscreen>
+    </iframe>
+  </div>
+  <button class="vs-continue" onclick="finishVideo()">Videre til GolfStart →</button>
+</div>
+
+<!-- PWA BAR -->
+<div id="pwa-bar">
+  <div class="pba">
+    <div class="pba-icon">⛳</div>
+    <div class="pba-txt"><strong>Gem GolfStart Ebeltoft</strong><span>Gem på hjemmeskærm</span></div>
+    <div class="pba-btns">
+      <button class="pba-yes" onclick="doPwa()">Gem</button>
+      <button class="pba-no" onclick="noPwa()">×</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<header id="topbar">
+  <div class="brand">⛳ GolfStart <em>Ebeltoft</em></div>
+  <div class="top-acts">
+    <a class="ta ta-gold" href="https://golfbox.golf/" target="_blank" rel="noopener noreferrer">📱 GolfBox</a>
+    <a class="ta ta-green" href="tel:+4588413344">📞 Ring os</a>
+    <a class="ta ta-ghost" href="http://ebeltoftgolf.dk" target="_blank" rel="noopener noreferrer">🌐 Klubben</a>
+  </div>
+</header>
+
+<!-- PRIMARY NAV – 5 items + APP -->
+<nav id="nav">
+  <div class="nav-row">
+    <a class="on" data-p="oversigt">Oversigt</a>
+    <a data-p="forloeb">Dit forløb</a>
+    <a data-p="ven">Tilmeld en ven</a>
+    <a data-p="links">Links</a>
+    <a data-p="kontakt">Kontakt</a>
+    <a data-p="app" class="nav-app">📲 APP</a>
+  </div>
+</nav>
+
+<!-- ═══ OVERSIGT ═══ -->
+<section id="oversigt" class="pg on">
+  <div class="oversigt-hero">
+    <div class="oh-eyebrow">Ebeltoft Golfklub · Sæson 2027</div>
+    <h1>Velkommen til<br>GolfStart Ebeltoft</h1>
+    <p>Ny i golf? Vi hjælper dig fra første slag til du er tryg på banen og i klubben.</p>
+    <div class="hero-ctas">
+      <button class="btn btn-p" onclick="go('forloeb')">Se dit forløb</button>
+      <button class="btn btn-s" onclick="go('ven')">Tilmeld en ven</button>
+    </div>
+  </div>
+
+  <!-- PRIMARY CARDS -->
+  <div class="ov-grid">
+    <div class="ov-card oc-primary" onclick="go('forloeb')">
+      <div class="oc-icon-wrap"><svg class="oc-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></div>
+      <h3>Dit forløb</h3>
+      <p>Fra tilmelding til DGU-kort. Hele begynderrejsen trin for trin.</p>
+      <div class="oc-arrow"></div>
+    </div>
+    <div class="ov-card oc-green" onclick="go('ven')">
+      <div class="oc-icon-wrap"><svg class="oc-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <h3>Tilmeld en ven</h3>
+      <p>Kend nogen der vil prøve golf? Hjælp dem i gang her.</p>
+      <div class="oc-arrow"></div>
+    </div>
+  </div>
+
+  <!-- BEGYNDER & VIDERE -->
+  <div class="ov-section-head">Begynder &amp; videre</div>
+  <div class="ov-grid ov-grid-sm">
+    <div class="ov-card" onclick="showSub('kvinder')">
+      <div class="oc-icon-wrap"><svg class="oc-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M12 12v8m-4 0h8"/></svg></div>
+      <h3>Kvinder & Golf</h3>
+      <p>Trygt og socialt forløb skabt til kvinder.</p>
+      <div class="oc-arrow"></div>
+    </div>
+    <div class="ov-card" onclick="showSub('maend')">
+      <div class="oc-icon-wrap"><svg class="oc-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10" cy="12" r="6"/><path d="M22 2l-6 6m0-6h6v6"/></svg></div>
+      <h3>Mænd & Golf</h3>
+      <p>Praktisk introduktionsforløb med teknik og banespil.</p>
+      <div class="oc-arrow"></div>
+    </div>
+    <div class="ov-card" onclick="showSub('meregolf')">
+      <div class="oc-icon-wrap"><svg class="oc-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+      <h3>Mere Golf</h3>
+      <p>Prøvemedlemskab, det første år og videre i klublivet.</p>
+      <div class="oc-arrow"></div>
+    </div>
+    <div class="ov-card" onclick="showSub('klar')">
+      <div class="oc-icon-wrap"><svg class="oc-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+      <h3>Klar til start</h3>
+      <p>Tjekliste og praktisk info til din første dag.</p>
+      <div class="oc-arrow"></div>
+    </div>
+  </div>
+
+  <!-- HJÆLP & KLUBLIV -->
+  <div class="ov-section-head">Hjælp &amp; klubliv</div>
+  <div class="ov-grid ov-grid-sm">
+    <div class="ov-card" onclick="showSub('faq')">
+      <div class="oc-icon-wrap"><svg class="oc-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m.08 4h.01"/></svg></div>
+      <h3>FAQ</h3>
+      <p>Svar på de mest stillede spørgsmål.</p>
+      <div class="oc-arrow"></div>
+    </div>
+    <div class="ov-card" onclick="showSub('cafe')">
+      <div class="oc-icon-wrap"><svg class="oc-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div>
+      <h3>Café To</h3>
+      <p>Mad, kaffe og socialt samvær i klubhuset.</p>
+      <div class="oc-arrow"></div>
+    </div>
+    <div class="ov-card" onclick="showSub('sponsorer')">
+      <div class="oc-icon-wrap"><svg class="oc-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>
+      <h3>Sponsorer</h3>
+      <p>Støt begyndergolf på Djursland.</p>
+      <div class="oc-arrow"></div>
+    </div>
+  </div>
+
+  <!-- SUB-PAGES (Kvinder, Mænd, Café, Sponsorer) embedded -->
+  <div id="sub-content" style="display:none;">
+    <div class="w" id="sub-kvinder" style="display:none;">
+      <h3>👩 Kvinder & Golf</h3>
+      <p>Kvinder & Golf hos Ebeltoft Golfklub kombinerer golftræning med socialt samvær. Du mødes med andre kvinder i samme situation og lærer spillet i dit eget tempo.</p>
+      <div class="dbox">
+        <h3>Forløbet indeholder</h3>
+        <ul class="dl">
+          <li>Træning med PGA-certificerede trænere – teknik, swing og short game</li>
+          <li>Sociale aktiviteter og netværk med andre kvindelige nybegyndere</li>
+          <li>Introduktion til golfregler og etikette</li>
+          <li>DGU's regelprøve der giver adgang til banespil</li>
+          <li>Dine første runder med erfaren mentor</li>
+          <li>Vejledning til GolfBox og DGU-handicap</li>
+        </ul>
+      </div>
+      <div class="ibox"><strong>Holdstart 2027:</strong> Datoer offentliggøres snart. Kontakt sekretariatet for at tilkendegive interesse.</div>
+      <div class="fcard">
+        <h3>Tilmeld interesse – Kvinder & Golf</h3>
+        <div class="fg"><label>Navn</label><input type="text" placeholder="Dit fulde navn"></div>
+        <div class="fg"><label>Telefon</label><input type="tel" placeholder="Dit telefonnummer"></div>
+        <div class="fg"><label>E-mail</label><input type="email" placeholder="Din e-mailadresse"></div>
+        <button class="fsend" onclick="sendForm(this)">Send forespørgsel</button>
+        <div class="fok">✅ Tak. Ebeltoft Golfklub kontakter dig hurtigst muligt.</div>
+      </div>
+    </div>
+
+    <div class="w" id="sub-maend" style="display:none;">
+      <h3>🏌️ Mænd & Golf</h3>
+      <p>Mænd & Golf kombinerer teknik, banespil og socialt samvær. Du lærer golf fra grunden med fokus på det, der giver en sjov og kompetent start.</p>
+      <div class="dbox">
+        <h3>Forløbets indhold</h3>
+        <ul class="dl">
+          <li>Swingteknik, jern, driver og putter fra dag ét</li>
+          <li>Golfregler og etikette</li>
+          <li>DGU-regelprøve og banetilladelse</li>
+          <li>Introduktionsrunder med mentor</li>
+          <li>GolfBox-opsætning og handicap-forklaring</li>
+          <li>Socialt samvær og netværk</li>
+        </ul>
+      </div>
+      <div class="ibox"><strong>Holdstart 2027:</strong> Datoer offentliggøres snart. Kontakt sekretariatet.</div>
+      <div class="fcard">
+        <h3>Tilmeld interesse – Mænd & Golf</h3>
+        <div class="fg"><label>Navn</label><input type="text" placeholder="Dit fulde navn"></div>
+        <div class="fg"><label>Telefon</label><input type="tel" placeholder="Dit telefonnummer"></div>
+        <div class="fg"><label>E-mail</label><input type="email" placeholder="Din e-mailadresse"></div>
+        <button class="fsend" onclick="sendForm(this)">Send forespørgsel</button>
+        <div class="fok">✅ Tak. Ebeltoft Golfklub kontakter dig hurtigst muligt.</div>
+      </div>
+    </div>
+
+    <div class="w" id="sub-meregolf" style="display:none;">
+      <h3>⭐ Mere Golf</h3>
+      <p>Allerede nysgerrig på hvad der venter efter begynderforløbet? Her er veje videre ind i golflivet på Ebeltoft Golfklub.</p>
+      <div class="dbox">
+        <h3>Prøvemedlemskab</h3>
+        <ul class="dl">
+          <li>Tilmeld dig som prøvemedlem og oplev klubben risikofrit</li>
+          <li>Prøvemedlemskabets pris modregnes i fuldt medlemskab ved konvertering</li>
+          <li>Adgang til drivingrange, putting green og begynderrunder</li>
+          <li>Sekretariatet hjælper dig med overgangen til aktivt DGU-medlemskab</li>
+        </ul>
+      </div>
+      <div class="dbox">
+        <h3>Dit første år i klubben</h3>
+        <ul class="dl">
+          <li>Deltag i Herredag (tirsdag) eller Damedag – ugentlige klubrunder</li>
+          <li>Mød faste spillemakkere og byg dit golfnetværk</li>
+          <li>Spil i klubturneringer og lokale Stableford-matcher</li>
+          <li>Følg dit handicap tæt – GolfBox viser udviklingen</li>
+          <li>Café To efter runden er hjertet i det sociale klubliv</li>
+        </ul>
+      </div>
+      <div class="ibox"><strong>Kontakt sekretariatet</strong> på 88 41 33 44 for information om prøvemedlemskab og fuldt aktivt medlemskab 2027.</div>
+      <div class="fcard">
+        <h3>Tilmeld interesse – Prøvemedlem / Mere Golf</h3>
+        <div class="fg"><label>Navn</label><input type="text" placeholder="Dit fulde navn"></div>
+        <div class="fg"><label>Telefon</label><input type="tel" placeholder="Dit telefonnummer"></div>
+        <div class="fg"><label>E-mail</label><input type="email" placeholder="Din e-mailadresse"></div>
+        <div class="fg"><label>Hvad er du interesseret i?</label>
+          <select><option>Prøvemedlemskab</option><option>Fuldt medlemskab</option><option>Mere info om klublivet</option></select>
+        </div>
+        <button class="fsend" onclick="sendForm(this)">Send forespørgsel</button>
+        <div class="fok">✅ Tak. Ebeltoft Golfklub kontakter dig hurtigst muligt.</div>
+      </div>
+    </div>
+
+    <div class="w" id="sub-cafe" style="display:none;">
+      <h3>☕ Café To</h3>
+      <div class="cgrd">
+        <div class="cc2"><div class="em">🥪</div><h4>Smørrebrød & snacks</h4><p>Klassisk dansk smørrebrød og lette retter.</p></div>
+        <div class="cc2"><div class="em">☕</div><h4>Kaffe & kage</h4><p>Friskbrygget kaffe og hjemmebagt kage.</p></div>
+        <div class="cc2"><div class="em">🍺</div><h4>Øl & vand</h4><p>Kolde drikke til den varme sommerdag.</p></div>
+        <div class="cc2"><div class="em">🍽️</div><h4>Events</h4><p>Varm mad ved turneringer og arrangementer.</p></div>
+      </div>
+      <div class="contact-card">
+        <div class="cc-head"><h3>☕ Kontakt Café To</h3><span>Kennett Sørensen · Spørgsmål til mad, arrangementer og selskaber</span></div>
+        <div class="cc-body">
+          <div class="crow"><div class="cicon">📍</div><div class="cinfo"><div class="lbl">Adresse</div><div class="val">Galgebakken 14, 8400 Ebeltoft</div></div></div>
+          <div class="crow"><div class="cicon">📞</div><div class="cinfo"><div class="lbl">Telefon</div><div class="val"><a href="tel:+4571781006">71 78 10 06</a></div></div></div>
+          <div class="crow"><div class="cicon">✉️</div><div class="cinfo"><div class="lbl">E-mail</div><div class="val"><button class="clink" onclick="copyCafeEmail()">kontakt@cafeto.dk</button></div></div></div>
+          <div class="crow"><div class="cicon">🕒</div><div class="cinfo"><div class="lbl">Åbningstider</div><div class="val">Lørdag–søndag 11–15 · Mandag & torsdag 12–20</div></div></div>
+        </div>
+        <div class="cc-btns">
+          <a class="cbtn cb-g" href="tel:+4571781006">📞 Ring</a>
+          <button class="cbtn cb-gold" onclick="copyCafeEmail()">✉️ Send mail</button>
+          <a class="cbtn cb-sage" href="https://cafeto.dk" target="_blank" rel="noopener noreferrer">🌐 cafeto.dk</a>
+          <a class="cbtn cb-dark" href="https://www.google.com/maps/search/?api=1&query=Galgebakken+14+8400+Ebeltoft" target="_blank" rel="noopener noreferrer">📍 Kort</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="w" id="sub-sponsorer" style="display:none;">
+      <h3>🤝 Sponsorer 2027</h3>
+      <div class="ibox">Sponsorater støtter aktiviteter, præmier og udviklingen af nye golfspillere i Ebeltoft Golfklub.</div>
+      <div class="sps">
+        <div class="sp sp-gd"><div class="sp-badge">Guld · Hoved</div><div class="sp-info"><h4>Årets Hovedsponsor</h4><p>Logo på al trykt materiale og i klubhuset. 1 plads.</p></div><button class="sp-cta" onclick="go('kontakt')">Kontakt →</button></div>
+        <div class="sp sp-gd"><div class="sp-badge">Kvinder & Golf</div><div class="sp-info"><h4>Kvinder & Golf Sponsor</h4><p>Eksklusiv synlighed på holdets materiale.</p></div><button class="sp-cta" onclick="go('kontakt')">Kontakt →</button></div>
+        <div class="sp sp-gd"><div class="sp-badge">Mænd & Golf</div><div class="sp-info"><h4>Mænd & Golf Sponsor</h4><p>Eksklusiv synlighed på holdets materiale.</p></div><button class="sp-cta" onclick="go('kontakt')">Kontakt →</button></div>
+        <div class="sp sp-sv"><div class="sp-badge">Sølv · Præmie</div><div class="sp-info"><h4>Præmiesponsor</h4><p>Logo ved afslutningsarrangementer. 2 pladser.</p></div><button class="sp-cta" onclick="go('kontakt')">Kontakt →</button></div>
+        <div class="sp sp-lc"><div class="sp-badge">Lokal partner</div><div class="sp-info"><h4>Lokal Samarbejdspartner</h4><p>Omtale i velkomstpakken.</p></div><button class="sp-cta" onclick="go('kontakt')">Kontakt →</button></div>
+      </div>
+    </div>
+
+    <!-- FAQ embedded -->
+    <div class="w" id="sub-faq" style="display:none;">
+      <h3>❓ Ofte stillede spørgsmål</h3>
+      <div class="faq">
+        <div class="fi"><button class="fq" onclick="fq(this)">Hvad koster et begynderforløb? <span class="ar">▾</span></button><div class="fa">Vejledende pris er kr. 2.000–2.500 inkl. DGU-gebyr og regelprøve. Kontakt sekretariatet på 88 41 33 44 for aktuelle 2027-priser.</div></div>
+        <div class="fi"><button class="fq" onclick="fq(this)">Skal jeg have egne golfkøller? <span class="ar">▾</span></button><div class="fa">Nej. Du kan låne udstyr i starten. Når du er klar til at investere, hjælper pro-shoppen dig med at vælge rigtigt sæt til dit niveau og din spillestil.</div></div>
+        <div class="fi"><button class="fq" onclick="fq(this)">Hvordan tilmelder jeg mig Kvinder & Golf eller Mænd & Golf? <span class="ar">▾</span></button><div class="fa">Via kontaktformularen på denne side, eller ring til sekretariatet på 88 41 33 44. Vi finder det rette hold og tidspunkt. Holdstart meddeles, når datoer for 2027 er fastlagt.</div></div>
+        <div class="fi"><button class="fq" onclick="fq(this)">Hvornår må jeg spille på banen? <span class="ar">▾</span></button><div class="fa">Når du har gennemført introduktionsforløbet, bestået DGU's regelprøve og fået banetilladelse af underviser. Herefter er 18-hullers banen åben for dig.</div></div>
+        <div class="fi"><button class="fq" onclick="fq(this)">Hvad er GolfBox? <span class="ar">▾</span></button><div class="fa">GolfBox er Danmarks officielle golfplatform til booking af tider, registrering af scorekort, handicap og turneringer. Download gratis på golfbox.golf eller i App Store/Google Play.</div></div>
+        <div class="fi"><button class="fq" onclick="fq(this)">Hvad er Golfreglerne 2023? <span class="ar">▾</span></button><div class="fa">Den officielle danske regelapp fra The R&A. Download gratis i App Store eller Google Play. Indeholder alle gældende regler og er uundværlig på banen og til regelprøven.</div></div>
+        <div class="fi"><button class="fq" onclick="fq(this)">Hvad er GLFR? <span class="ar">▾</span></button><div class="fa">GLFR – Din Golf og Klub App – bruges til digitalt scorekort og baneguide. Søg "GLFR – Din Golf og Klub App" i App Store eller Google Play.</div></div>
+        <div class="fi"><button class="fq" onclick="fq(this)">Hvordan får jeg mit DGU-handicap? <span class="ar">▾</span></button><div class="fa">Dit handicap oprettes automatisk via DGU, når du registreres som aktivt DGU-medlem. Herefter registrerer du dine scorekort i GolfBox, og handicappet opdateres løbende. Jo flere runder, jo mere præcist bliver det.</div></div>
+        <div class="fi"><button class="fq" onclick="fq(this)">Hvad er Stableford, og hvordan tæller jeg point? <span class="ar">▾</span></button><div class="fa">Stableford er den mest udbredte pointbaserede spilleform i golf. Du får 2 point for par, 3 for birdie og 1 for bogey. 0 point for double bogey eller dårligere. Dit handicap giver ekstra slag på udvalgte huller – det fremgår af scorekortet.</div></div>
+        <div class="fi"><button class="fq" onclick="fq(this)">Hvad betyder stregerne på scorekortet? <span class="ar">▾</span></button><div class="fa">Stregerne viser hvilke huller du får ekstra slag på baseret på dit handicap. Hullerne er rangordnet fra 1 (sværest) til 18 (lettest). Jo højere handicap du har, jo flere huller får du ekstra slag på.</div></div>
+        <div class="fi"><button class="fq" onclick="fq(this)">Kan jeg starte alene, uden at kende nogen i klubben? <span class="ar">▾</span></button><div class="fa">Absolut. De fleste starter alene. På begynderholdene møder du hurtigt andre i samme situation. Klubbens mentorer sørger for, at ingen mangler en at spille med. Café To efter runden er et naturligt sted at møde nye golfvenner.</div></div>
+        <div class="fi"><button class="fq" onclick="fq(this)">Hvem hjælper mig som ny golfspiller? <span class="ar">▾</span></button><div class="fa">PGA-uddannede trænere, frivillige holdledere og erfarne mentorer fra klubben. Sekretariatet på 88 41 33 44 hjælper med alt det praktiske – tilmelding, udstyr, booking og priser.</div></div>
+        <div class="fi"><button class="fq" onclick="fq(this)">Skal jeg kende reglerne fra starten? <span class="ar">▾</span></button><div class="fa">Nej. Du lærer reglerne undervejs i forløbet. Underviser gennemgår de vigtigste regler, inden du tager DGU's regelprøve. Golfreglerne 2023 er din ven på banen.</div></div>
+        <div class="fi"><button class="fq" onclick="fq(this)">Hvordan booker jeg en tid på banen? <span class="ar">▾</span></button><div class="fa">Via GolfBox-appen eller på golfbox.golf. Du kan booke op til 8 dage frem. Husk at din banetilladelse skal være på plads, inden du booker dit første selvstændige banespil.</div></div>
+        <div class="fi"><button class="fq" onclick="fq(this)">Hvordan finder jeg en spillemakker? <span class="ar">▾</span></button><div class="fa">I GolfBox kan du se om der er ledige pladser i andres tider. Du kan også spørge sekretariatet om at blive sat sammen med andre spillere på dit niveau. Mange begyndere finder faste makkerpar allerede på begynderholdet.</div></div>
+        <div class="fi"><button class="fq" onclick="fq(this)">Hvad er Café To? <span class="ar">▾</span></button><div class="fa">Café To er klubhuscaféen i Ebeltoft Golfklub. Åben lørdag-søndag 11-15 og mandag & torsdag 12-20. Her samles GolfStart-holdene efter træning, og det er naturligt centrum for det sociale klubliv.</div></div>
+        <div class="fi"><button class="fq" onclick="fq(this)">Hvor finder jeg lokale regler for Ebeltoft Golfklub? <span class="ar">▾</span></button><div class="fa">Lokale regler fremgår af scorekortet og er opslået i klubhuset. Du kan også finde dem på ebeltoftgolf.dk eller spørge sekretariatet på 88 41 33 44.</div></div>
+      </div>
+    </div>
+
+    <!-- Klar til start embedded -->
+    <div class="w" id="sub-klar" style="display:none;">
+      <h3>✅ Klar til start – tjekliste</h3>
+      <ul class="ckl">
+        <li><div class="ck">✓</div><div><strong>GolfBox er klar</strong><br>Download til iOS eller Android, opret profil og find Ebeltoft Golfklub.</div></li>
+        <li><div class="ck">✓</div><div><strong>Golfreglerne 2023 er hentet</strong><br>Den officielle regelapp fra The R&A på dansk.</div></li>
+        <li><div class="ck">✓</div><div><strong>GLFR er fundet</strong><br>Søg "GLFR – Din Golf og Klub App" i App Store eller Google Play.</div></li>
+        <li><div class="ck">✓</div><div><strong>Jeg ved hvor jeg skal møde</strong><br>Galgebakken 14, 8400 Ebeltoft. Ankom 15 min. før holdstart.</div></li>
+        <li><div class="ck">✓</div><div><strong>Kontakten er gemt</strong><br>Sekretariatet: 88 41 33 44.</div></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Secondary nav for sub-content -->
+  <div class="w" id="sub-nav-wrap" style="display:none;padding-top:0;padding-bottom:0;">
+    <div class="sub-nav">
+      <button class="snav-btn" onclick="showSub('kvinder')">Kvinder & Golf</button>
+      <button class="snav-btn" onclick="showSub('maend')">Mænd & Golf</button>
+      <button class="snav-btn" onclick="showSub('meregolf')">Mere Golf</button>
+      <button class="snav-btn" onclick="showSub('klar')">Klar til start</button>
+      <button class="snav-btn" onclick="showSub('faq')">FAQ</button>
+      <button class="snav-btn" onclick="showSub('cafe')">Café To</button>
+      <button class="snav-btn" onclick="showSub('sponsorer')">Sponsorer</button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ DIT FORLØB ═══ -->
+<section id="forloeb" class="pg">
+  <div class="sh">
+    <div class="sh-pill">Dit forløb</div>
+    <h2>Fra første slag til aktivt medlem</h2>
+    <p>Syv klare trin. Ét samlet forløb. Du er aldrig alene undervejs.</p>
+  </div>
+  <div class="w">
+    <div class="steps">
+      <div class="step"><div class="step-l"><div class="step-dot">1</div><div class="step-line"></div></div><div class="step-b"><h4>Tilmelding</h4><p>Vælg hold – Kvinder & Golf, Mænd & Golf eller Prøv Golf. Tilmeld dig via kontaktformularen eller ring til sekretariatet på 88 41 33 44.</p></div></div>
+      <div class="step"><div class="step-l"><div class="step-dot">2</div><div class="step-line"></div></div><div class="step-b"><h4>Velkomst</h4><p>Første dag: rundvisning i klubben, opsætning af GolfBox og møde med trænere og medspillere. Du behøver ikke eget udstyr endnu.</p></div></div>
+      <div class="step"><div class="step-l"><div class="step-dot">3</div><div class="step-line"></div></div><div class="step-b"><h4>Træning</h4><p>6–8 moduler med PGA-uddannede trænere. Teknik, swing, putting og short game – i dit eget tempo med personlig feedback.</p></div></div>
+      <div class="step"><div class="step-l"><div class="step-dot">4</div><div class="step-line"></div></div><div class="step-b"><h4>Regler og bane</h4><p>Golfregler og etikette forklaret klart. DGU's regelprøve tages online hjemmefra, inden du går ud på banen første gang.</p></div></div>
+      <div class="step"><div class="step-l"><div class="step-dot">5</div><div class="step-line"></div></div><div class="step-b"><h4>Spil med andre</h4><p>Du parres med en erfaren mentor. De første runder på Ebeltoft Golfklubs 18-hullers bane foregår i trygge rammer.</p></div></div>
+      <div class="step"><div class="step-l"><div class="step-dot">6</div><div class="step-line"></div></div><div class="step-b"><h4>Klar til selvstændig golf</h4><p>Banetilladelse og DGU-kort. Du er nu aktivt DGU-medlem med officielt handicap og kan booke tider i GolfBox.</p></div></div>
+      <div class="step"><div class="step-l"><div class="step-dot">7</div></div><div class="step-b"><h4>Videre ind i klubfællesskabet</h4><p>Spil Herredag eller Damedag, mød andre begyndere i Café To, find faste spillemakkere og deltag i klubturneringer. Fællesskabet venter.</p></div></div>
+    </div>
+    <div class="ibox"><strong>2027-holdstart:</strong> Datoer offentliggøres snart. Kontakt sekretariatet på 88 41 33 44 for at tilkendegive din interesse.</div>
+    <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:24px;">
+      <button class="btn btn-p" onclick="go('ven')" style="flex:1;min-width:160px;justify-content:center;">Tilmeld en ven</button>
+      <button class="btn btn-s" onclick="go('kontakt')" style="flex:1;min-width:160px;justify-content:center;">Kontakt os</button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TILMELD EN VEN ═══ -->
+<section id="ven" class="pg">
+  <div class="sh">
+    <div class="sh-pill">Tilmeld en ven</div>
+    <h2>Kend nogen der vil prøve golf?</h2>
+    <p>Hjælp dem i gang – det tager to minutter, og vi klarer resten.</p>
+  </div>
+  <div class="w">
+    <div class="ven-hero">
+      <div class="ve-icon">🤝</div>
+      <h3>Golf er bedre med en ven</h3>
+      <p>Send dette link – eller udfyld formularen nedenfor på vegne af den, du vil invitere. Vi sørger for en varm velkomst.</p>
+    </div>
+
+    <div class="ven-steps">
+      <div class="ven-step"><div class="vs-num">1</div><div><h4>Du fortæller om din ven</h4><p>Navn, telefon og hvad vennen er interesseret i.</p></div></div>
+      <div class="ven-step"><div class="vs-num">2</div><div><h4>Vi tager kontakt</h4><p>Sekretariatet ringer eller skriver til din ven.</p></div></div>
+      <div class="ven-step"><div class="vs-num">3</div><div><h4>Vennen prøver golf</h4><p>Én time, lånt udstyr, professionel instruktør.</p></div></div>
+      <div class="ven-step"><div class="vs-num">4</div><div><h4>I spiller sammen</h4><p>Hvis din ven tilmelder sig et hold, kan I lære golf side om side.</p></div></div>
+    </div>
+
+    <div class="cards">
+      <div class="card card-d"><div class="ci">🧑‍🏫</div><h4>Instruktør fra start</h4><p>Din ven møder en PGA-uddannet træner, der viser det grundlæggende.</p></div>
+      <div class="card card-g"><div class="ci">🏌️</div><h4>Udstyr inkluderet</h4><p>Ingen grund til at købe noget inden. Vi låner køller og bolde.</p></div>
+      <div class="card"><div class="ci">🌿</div><h4>Ingen erfaring nødvendig</h4><p>Absolut begynder? Perfekt. GolfStart er skabt til dem der aldrig har prøvet.</p></div>
+    </div>
+
+    <div class="fcard">
+      <h3>Tilmeld din ven</h3>
+      <div class="fg"><label>Din vens navn</label><input type="text" placeholder="Fulde navn"></div>
+      <div class="fg"><label>Din vens telefon</label><input type="tel" placeholder="Telefonnummer"></div>
+      <div class="fg"><label>Din vens e-mail (valgfrit)</label><input type="email" placeholder="E-mailadresse"></div>
+      <div class="fg"><label>Dit navn (den der anbefaler)</label><input type="text" placeholder="Dit navn"></div>
+      <div class="fg"><label>Hvad er din ven interesseret i?</label>
+        <select><option>Prøvetime (én session)</option><option>Kvinder & Golf 2027</option><option>Mænd & Golf 2027</option><option>Prøvemedlemskab</option><option>Usikker – ring og fortæl mere</option></select>
+      </div>
+      <div class="fg"><label>Besked (valgfrit)</label><textarea placeholder="Noget vi bør vide om din ven?"></textarea></div>
+      <button class="fsend" onclick="sendForm(this)">Send tilmelding</button>
+      <div class="fok">✅ Tak! Vi kontakter din ven hurtigst muligt og sikrer en varm velkomst.</div>
+    </div>
+
+    <div class="ibox">Du kan også bare sende dette link til din ven:<br><strong>johnfinmann-ctrl.github.io/golfstart-ebeltoft/</strong></div>
+  </div>
+</section>
+
+<!-- ═══ LINKS ═══ -->
+<section id="links" class="pg">
+  <div class="sh">
+    <div class="sh-pill">Links</div>
+    <h2>Genveje og golfapps</h2>
+    <p>Hent de vigtigste apps inden din første dag.</p>
+  </div>
+  <div class="w">
+    <div class="links-grid">
+      <a class="lnk" href="https://golfbox.golf/" target="_blank" rel="noopener noreferrer">
+        <div class="li">📱</div><h4>GolfBox</h4>
+        <p>Booking, scorekort og handicap.</p>
+        <span class="la">golfbox.golf →</span>
+      </a>
+      <div class="lnk lnk-info">
+        <div class="li">⛳</div><h4>Mit Golf</h4>
+        <p>DGU's officielle platform. Søg "Mit Golf".</p>
+        <div class="ts">
+          <a class="sb" href="https://apps.apple.com/dk/app/mit-golf/id6689505093" target="_blank" rel="noopener noreferrer">App Store</a>
+          <a class="sb" href="https://play.google.com/store/apps/details?id=com.golf_box.danish_golf_union" target="_blank" rel="noopener noreferrer">Google Play</a>
+        </div>
+      </div>
+      <div class="lnk lnk-info">
+        <div class="li">📖</div><h4>Golfreglerne 2023</h4>
+        <p>Officielle regler fra The R&A på dansk.</p>
+        <div class="ts">
+          <a class="sb" href="https://apps.apple.com/dk/app/golfreglerne-2023/id1435204099" target="_blank" rel="noopener noreferrer">App Store</a>
+          <a class="sb" href="https://play.google.com/store/apps/details?id=com.randa.android" target="_blank" rel="noopener noreferrer">Google Play</a>
+          <a class="sb" href="https://www.randa.org/en/rules/rules-app" target="_blank" rel="noopener noreferrer">R&A</a>
+        </div>
+      </div>
+      <div class="lnk lnk-info">
+        <div class="li">🤝</div><h4>GLFR</h4>
+        <p>Digitalt scorekort og baneguide. Søg "GLFR – Din Golf og Klub App".</p>
+        <div class="ts">
+          <a class="sb" href="https://apps.apple.com/dk/search?term=GLFR+Din+Golf+og+Klub" target="_blank" rel="noopener noreferrer">App Store</a>
+          <a class="sb" href="https://play.google.com/store/search?q=GLFR+golf&c=apps" target="_blank" rel="noopener noreferrer">Google Play</a>
+        </div>
+      </div>
+      <a class="lnk" href="https://www.danskgolf.dk/golfregler/regelproeven/" target="_blank" rel="noopener noreferrer">
+        <div class="li">📝</div><h4>Regelprøven</h4>
+        <p>Tag DGU's digitale regelprøve og få banetilladelse.</p>
+        <span class="la">danskgolf.dk →</span>
+      </a>
+      <a class="lnk" href="https://www.randa.org/en/rules/rules-app" target="_blank" rel="noopener noreferrer">
+        <div class="li">🏅</div><h4>R&A Rules</h4>
+        <p>Videoer og regelfortolkninger fra The R&A.</p>
+        <span class="la">randa.org →</span>
+      </a>
+      <a class="lnk" href="http://ebeltoftgolf.dk" target="_blank" rel="noopener noreferrer">
+        <div class="li">🌐</div><h4>Ebeltoft Golfklub</h4>
+        <p>Klubbens officielle hjemmeside.</p>
+        <span class="la">ebeltoftgolf.dk →</span>
+      </a>
+      <a class="lnk" href="https://cafeto.dk" target="_blank" rel="noopener noreferrer">
+        <div class="li">☕</div><h4>Café To</h4>
+        <p>Café To i klubhuset – menu og info.</p>
+        <span class="la">cafeto.dk →</span>
+      </a>
+    </div>
+    <div class="ibox"><strong>Tip:</strong> Hent GolfBox og Golfreglerne 2023 inden din første dag – så er du klar fra start.</div>
+  </div>
+</section>
+
+<!-- ═══ KONTAKT ═══ -->
+<section id="kontakt" class="pg">
+  <div class="sh">
+    <div class="sh-pill">Kontakt</div>
+    <h2>Vi er klar til at hjælpe</h2>
+    <p>Ring, skriv eller kig forbi – vi svarer inden for 1–2 hverdage.</p>
+  </div>
+  <div class="w">
+    <div class="contact-card">
+      <div class="cc-head"><h3>Ebeltoft Golfklub</h3><span>Sekretariatet · GolfStart 2027</span></div>
+      <div class="cc-body">
+        <div class="crow"><div class="cicon">📍</div><div class="cinfo"><div class="lbl">Adresse</div><div class="val">Galgebakken 14, 8400 Ebeltoft</div></div></div>
+        <div class="crow"><div class="cicon">📞</div><div class="cinfo"><div class="lbl">Telefon</div><div class="val"><a href="tel:+4588413344">88 41 33 44</a></div></div></div>
+        <div class="crow"><div class="cicon">✉️</div><div class="cinfo"><div class="lbl">E-mail</div><div class="val"><button class="clink" onclick="copyEmail()">info@ebeltoftgolf.dk</button></div></div></div>
+        <div class="crow"><div class="cicon">🌐</div><div class="cinfo"><div class="lbl">Hjemmeside</div><div class="val"><a href="http://ebeltoftgolf.dk" target="_blank" rel="noopener noreferrer">ebeltoftgolf.dk</a></div></div></div>
+        <div class="crow"><div class="cicon">📱</div><div class="cinfo"><div class="lbl">GolfBox</div><div class="val"><a href="https://golfbox.golf/" target="_blank" rel="noopener noreferrer">golfbox.golf</a></div></div></div>
+        <div class="crow"><div class="cicon">🕒</div><div class="cinfo"><div class="lbl">Åbningstider</div><div class="val">Man–fre 09–15 · Lørdag 09–13</div></div></div>
+      </div>
+      <div class="cc-btns">
+        <a class="cbtn cb-g" href="tel:+4588413344">📞 Ring nu</a>
+        <button class="cbtn cb-gold" onclick="copyEmail()">✉️ Kopiér e-mail</button>
+        <a class="cbtn cb-dark" href="https://www.google.com/maps/search/?api=1&query=Galgebakken+14+8400+Ebeltoft" target="_blank" rel="noopener noreferrer">📍 Maps</a>
+        <a class="cbtn cb-sage" href="http://ebeltoftgolf.dk" target="_blank" rel="noopener noreferrer">🌐 Klub</a>
+      </div>
+    </div>
+
+    <div class="fcard">
+      <h3>Send en forespørgsel</h3>
+      <div class="fg"><label>Navn</label><input type="text" placeholder="Dit fulde navn"></div>
+      <div class="fg"><label>Telefon</label><input type="tel" placeholder="Dit telefonnummer"></div>
+      <div class="fg"><label>E-mail</label><input type="email" placeholder="Din e-mailadresse"></div>
+      <div class="fg"><label>Emne</label>
+        <select><option>Kvinder & Golf</option><option>Mænd & Golf</option><option>Prøv Golf</option><option>Prøvemedlem</option><option>Medlemskab</option><option>Sponsorat</option><option>Andet</option></select>
+      </div>
+      <div class="fg"><label>Besked (valgfrit)</label><textarea placeholder="Skriv gerne hvad du vil vide mere om..."></textarea></div>
+      <button class="fsend" onclick="sendForm(this)">Send forespørgsel</button>
+      <div class="fok">✅ Tak. Ebeltoft Golfklub kontakter dig hurtigst muligt.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ APP ═══ -->
+<section id="app" class="pg">
+  <div class="sh">
+    <div class="sh-pill">📲 APP</div>
+    <h2>GolfStart på din hjemmeskærm</h2>
+    <p>Gem som app – gratis, direkte fra browseren.</p>
+  </div>
+  <div class="w">
+    <div class="inst-grid">
+      <div class="ic ios">
+        <div class="ic-h"><div class="ic-logo">🍎</div><div><div class="ic-t">iPhone · Safari</div><div class="ic-s">Kræver Safari-browseren</div></div></div>
+        <ol><li>Åbn GolfStart i <strong>Safari</strong></li><li>Tryk <strong>Del-ikonet</strong> &#x2197; nederst</li><li>Vælg <strong>"Føj til hjemmeskærm"</strong></li><li>Tryk <strong>"Tilføj"</strong></li></ol>
+        <div class="ic-done">✓ GolfStart vises nu på din hjemmeskærm</div>
+      </div>
+      <div class="ic adr">
+        <div class="ic-h"><div class="ic-logo">🤖</div><div><div class="ic-t">Android · Chrome</div><div class="ic-s">Kræver Chrome-browseren</div></div></div>
+        <ol><li>Åbn GolfStart i <strong>Chrome</strong></li><li>Tryk <strong>3 prikker</strong> øverst til højre</li><li>Vælg <strong>"Installer app"</strong></li><li>Bekræft</li></ol>
+        <div class="ic-done">✓ GolfStart vises nu på din startskærm</div>
+      </div>
+    </div>
+    <div class="div"></div>
+    <div class="qrbox">
+      <h3>Del GolfStart Ebeltoft</h3>
+      <p>Scan QR-koden eller del linket.</p>
+      <canvas id="qrc" width="200" height="200"></canvas>
+      <div class="qr-u">johnfinmann-ctrl.github.io/golfstart-ebeltoft/</div>
+      <button class="share-btn" onclick="shareApp()">📤 Del GolfStart</button>
+      <div id="cptxt">✓ Link kopieret</div>
+    </div>
+  </div>
+</section>
+
+<!-- TOAST -->
+<div id="email-toast">✓ E-mailadresse kopieret</div>
+
+<!-- COOKIE -->
+<div id="ck">
+  <p>GolfStart Ebeltoft bruger cookies. <button onclick="showPP()" style="background:none;border:none;cursor:pointer;color:var(--dune);font-family:'Inter',sans-serif;font-size:.79rem;text-decoration:underline;padding:0;">Privatlivspolitik</button></p>
+  <button class="ck-y" onclick="closeCk()">Acceptér</button>
+  <button class="ck-n" onclick="closeCk()">Afvis</button>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <strong>GolfStart™</strong><br>
+  Digital onboarding og fastholdelse af golfspillere<br>
+  Udviklet af Nordic Operations · © 2026 Nordic Operations
+  <div class="fl">
+    <button onclick="go('kontakt')">Kontakt</button>
+    <a href="http://ebeltoftgolf.dk" target="_blank" rel="noopener noreferrer">Ebeltoft Golfklub</a>
+    <button onclick="showPP()">Privatlivspolitik</button>
+  </div>
+</footer>
+
+<script>
+// ── WELCOME VIDEO CONFIG ──
+// To swap video: change WELCOME_VIDEO_URL to a new iframe src or MP4 URL
+const WELCOME_VIDEO_URL = 'https://app.heygen.com/embeds/9a9e3a44d9f44908af5ee978e804197c';
+
+// ── WELCOME FLOW ──
+function enterApp(){
+  // Step 1: hide splash screen
+  document.getElementById('welcome-screen').classList.add('hidden');
+  // Step 2: show video screen and load iframe (lazy-load src)
+  const vs = document.getElementById('video-screen');
+  vs.classList.add('active');
+  document.getElementById('heygen-iframe').src = WELCOME_VIDEO_URL;
+  // Hide topbar and nav during video
+  document.getElementById('topbar').style.display = 'none';
+  document.getElementById('nav').style.display = 'none';
+}
+
+function finishVideo(){
+  // Dismiss video, show app normally
+  document.getElementById('video-screen').classList.remove('active');
+  document.getElementById('heygen-iframe').src = ''; // stop playback
+  document.getElementById('topbar').style.display = '';
+  document.getElementById('nav').style.display = '';
+  localStorage.setItem('gs_welcomed_ebt','1');
+}
+
+function skipVideo(){
+  finishVideo();
+}
+
+// Skip welcome+video if already seen (uncomment for production):
+// if(localStorage.getItem('gs_welcomed_ebt')){ document.getElementById('welcome-screen').classList.add('hidden'); }
+// Auto-dismiss splash after 4.2s if user doesn't tap
+setTimeout(()=>{ if(!document.getElementById('welcome-screen').classList.contains('hidden')) enterApp(); }, 4200);
+
+// ── NAVIGATION ──
+const PAGES = ['oversigt','forloeb','ven','links','kontakt','app'];
+function go(id){
+  PAGES.forEach(p=>{ document.getElementById(p).classList.toggle('on', p===id); });
+  document.querySelectorAll('.nav-row a').forEach(a=>a.classList.toggle('on', a.dataset.p===id));
+  // Hide sub content when navigating away from oversigt
+  if(id!=='oversigt'){ document.getElementById('sub-content').style.display='none'; document.getElementById('sub-nav-wrap').style.display='none'; }
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(id==='app') setTimeout(drawQR,180);
+}
+document.querySelectorAll('.nav-row a').forEach(a=>{
+  a.addEventListener('click',e=>{ e.preventDefault(); go(a.dataset.p); });
+});
+
+// ── SUB CONTENT (within Oversigt) ──
+function showSub(id){
+  document.getElementById('sub-content').style.display='block';
+  document.getElementById('sub-nav-wrap').style.display='block';
+  ['kvinder','maend','meregolf','cafe','sponsorer','faq','klar'].forEach(s=>{
+    document.getElementById('sub-'+s).style.display = s===id ? 'block' : 'none';
+  });
+  document.querySelectorAll('.snav-btn').forEach(b=>b.classList.remove('active'));
+  // Scroll to sub content
+  setTimeout(()=>{ document.getElementById('sub-content').scrollIntoView({behavior:'smooth',block:'start'}); },60);
+}
+
+// ── FORM ──
+function sendForm(btn){
+  const c=btn.closest('.fcard'), ok=c.querySelector('.fok');
+  if(ok) ok.style.display='block';
+  btn.disabled=true; btn.style.opacity='.5';
+}
+
+// ── FAQ ──
+function fq(btn){
+  const a=btn.nextElementSibling, open=a.classList.contains('op');
+  document.querySelectorAll('.fa').forEach(x=>x.classList.remove('op'));
+  document.querySelectorAll('.fq').forEach(x=>x.classList.remove('op'));
+  if(!open){ a.classList.add('op'); btn.classList.add('op'); }
+}
+
+// ── COPY CLUB EMAIL ──
+function copyEmail(){
+  const addr='info@ebeltoftgolf.dk';
+  if(navigator.clipboard){ navigator.clipboard.writeText(addr).then(showToast).catch(()=>fallback(addr)); }
+  else fallback(addr);
+}
+function fallback(addr){ const el=document.createElement('textarea'); el.value=addr; document.body.appendChild(el); el.select(); try{document.execCommand('copy');showToast();}catch(e){prompt('Kopiér:',addr);} document.body.removeChild(el); }
+function showToast(){ const t=document.getElementById('email-toast'); if(!t)return; t.textContent='✓ E-mailadresse kopieret'; t.style.display='block'; setTimeout(()=>t.style.display='none',2500); }
+
+// ── COPY CAFÉ EMAIL ──
+function copyCafeEmail(){
+  const addr='kontakt@cafeto.dk';
+  if(navigator.clipboard){ navigator.clipboard.writeText(addr).then(showCafeToast).catch(()=>cafeFallback(addr)); }
+  else cafeFallback(addr);
+}
+function cafeFallback(addr){ const el=document.createElement('textarea'); el.value=addr; document.body.appendChild(el); el.select(); try{document.execCommand('copy');showCafeToast();}catch(e){prompt('Kopiér:',addr);} document.body.removeChild(el); }
+function showCafeToast(){ const t=document.getElementById('email-toast'); if(!t)return; t.textContent='✓ E-mailadresse kopieret'; t.style.display='block'; setTimeout(()=>t.style.display='none',2500); }
+
+// ── COOKIE ──
+function closeCk(){ document.getElementById('ck').style.display='none'; localStorage.setItem('gs_ck_ebt2','1'); }
+if(localStorage.getItem('gs_ck_ebt2')) closeCk();
+
+// ── PRIVACY ──
+function showPP(){ alert('Privatlivspolitik\n\nGolfStart Ebeltoft gemmer ingen persondata.\nKontaktformularer behandles af Ebeltoft Golfklub.\n\n© 2026 Nordic Operations'); }
+
+// ── PWA ──
+let _pwa=null;
+window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); _pwa=e; if(!localStorage.getItem('gs_pwa_ebt2')) document.getElementById('pwa-bar').style.display='block'; });
+function doPwa(){ if(_pwa){ _pwa.prompt(); _pwa.userChoice.then(()=>{ _pwa=null; noPwa(); }); } }
+function noPwa(){ document.getElementById('pwa-bar').style.display='none'; localStorage.setItem('gs_pwa_ebt2','1'); }
+
+// ── SERVICE WORKER ──
+if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{})); }
+
+// ── SHARE ──
+const APPURL='https://johnfinmann-ctrl.github.io/golfstart-ebeltoft/';
+function shareApp(){
+  if(navigator.share){ navigator.share({title:'GolfStart Ebeltoft',text:'Digital onboarding for nye golfspillere i Ebeltoft Golfklub 🏌️',url:APPURL}).catch(()=>{}); }
+  else{ navigator.clipboard.writeText(APPURL).then(()=>{ const t=document.getElementById('cptxt'); if(t){t.style.display='block';setTimeout(()=>t.style.display='none',2800);} }).catch(()=>prompt('Kopiér:',APPURL)); }
+}
+
+// ── QR ──
+let _qrdone=false;
+function drawQR(){
+  if(_qrdone)return; _qrdone=true;
+  const c=document.getElementById('qrc'); if(!c)return;
+  const ctx=c.getContext('2d'), img=new Image(); img.crossOrigin='anonymous';
+  img.onload=()=>{ ctx.fillStyle='#fff'; ctx.fillRect(0,0,200,200); ctx.drawImage(img,0,0,200,200); };
+  img.onerror=()=>{ ctx.fillStyle='#fff'; ctx.fillRect(0,0,200,200); ctx.fillStyle='#0e2819'; ctx.font='13px sans-serif'; ctx.textAlign='center'; ctx.fillText('Scan med kamera',100,100); };
+  img.src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(APPURL)+'&color=0e2819&bgcolor=ffffff&qzone=1';
+}
+</script>
+</body>
+</html>
